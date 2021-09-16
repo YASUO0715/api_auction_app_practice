@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\Item;
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 
 class ItemController extends Controller
 {
+    const host = '作成したHerokuアプリのURL';
     /**
      * Display a listing of the resource.
      *
@@ -13,7 +16,25 @@ class ItemController extends Controller
      */
     public function index()
     {
-        //
+        // 変数を用意
+        $url = '/api/items/';
+        $method = 'GET';
+
+        // Client(接続する為のクラス)を生成
+        $client = new Client();
+        // 接続失敗時はnullを返すようにする
+        try {
+            // URLにアクセスした結果を変数$responseに代入
+            $response = $client->request($method, self::host . $url);
+            // $responseのBodyを取得
+            $body = $response->getBody();
+            $items = json_decode($body, false);
+        } catch (\Exception $e) {
+            $items = null;
+        }
+
+
+        return view('items.index', compact('items'));
     }
 
     /**
@@ -45,7 +66,24 @@ class ItemController extends Controller
      */
     public function show($id)
     {
-        //
+        // 変数を用意
+        $url = '/api/items/' . $id;
+        $method = 'GET';
+
+        // Client(接続する為のクラス)を生成
+        $client = new Client();
+        // 接続失敗時はnullを返すようにする
+        try {
+            // URLにアクセスした結果を変数$responseに代入
+            $response = $client->request($method, self::host . $url);
+            // $responseのBodyを取得
+            $item = $response->getBody();
+            $item = json_decode($item, false);
+        } catch (\Exception $e) {
+            $item = null;
+        }
+
+        return view('items.show', compact('item'));
     }
 
     /**
