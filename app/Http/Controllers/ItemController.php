@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 
 class ItemController extends Controller
 {
-    const host = '作成したHerokuアプリのURL';
+    const host = 'https://auction-app-yasuo.herokuapp.com';
     /**
      * Display a listing of the resource.
      *
@@ -16,27 +16,11 @@ class ItemController extends Controller
      */
     public function index()
     {
-        // 変数を用意
-        $url = '/api/items/';
+        $url = '/api/items';
         $method = 'GET';
-
-        // Client(接続する為のクラス)を生成
-        $client = new Client();
-        // 接続失敗時はnullを返すようにする
-        try {
-            // URLにアクセスした結果を変数$responseに代入
-            $response = $client->request($method, self::host . $url);
-            // $responseのBodyを取得
-            $body = $response->getBody();
-            $items = json_decode($body, false);
-        } catch (\Exception $e) {
-            $items = null;
-        }
-
-
+        $items = $this->getResponse($url, $method);       
         return view('items.index', compact('items'));
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -59,36 +43,7 @@ class ItemController extends Controller
         $url = '/api/items';
         $method = 'POST';
 
-        // 送信するデータとヘッダーを用意
-        $item = [
-            'name'        => $request->name,
-            'description' => $request->description,
-            'price'       => $request->price,
-            'seller'      => $request->seller,
-            'email'       => $request->email,
-            'image_url'   => $request->image_url,
-        ];
-        $options = [
-            'json' => $item,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ];
-
-        // 接続
-        $client = new Client(['http_errors' => false]);
-        try {
-            $response = $client->request($method, self::host . $url, $options);
-            $body = $response->getBody();
-            $json = json_decode($body, false);
-            // 'errors'が設定されていたらエラーを設定して前画面へ戻る
-            if (isset($json->errors)) {
-                return back()->withErrors($json->errors);
-            };
-        } catch (\Exception $e) {
-            return back();
-        }
+        $this->setResponse($request, $url, $method);
 
         return redirect('/items');
     }
@@ -101,24 +56,15 @@ class ItemController extends Controller
      */
     public function show($id)
     {
-        // 変数を用意
+        
 
-        // 変数を用意
+        
         $url = '/api/items/' . $id;
         $method = 'GET';
 
-        // Client(接続する為のクラス)を生成
-        $client = new Client();
-        // 接続失敗時はnullを返すようにする
-        try {
-            // URLにアクセスした結果を変数$responseに代入
-            $response = $client->request($method, self::host . $url);
-            // $responseのBodyを取得
-            $item = $response->getBody();
-            $item = json_decode($item, false);
-        } catch (\Exception $e) {
-            $item = null;
-        }
+
+        $item = $this->getResponse($url, $method);
+
         return view('items.show', compact('item'));
     }
 
@@ -130,22 +76,12 @@ class ItemController extends Controller
      */
     public function edit($id)
     {
-        // 変数を用意
+        
         $url = '/api/items/' . $id;
         $method = 'GET';
 
-        // Client(接続する為のクラス)を生成
-        $client = new Client();
-        // 接続失敗時はnullを返すようにする
-        try {
-            // URLにアクセスした結果を変数$responseに代入
-            $response = $client->request($method, self::host . $url);
-            // $responseのBodyを取得
-            $item = $response->getBody();
-            $item = json_decode($item, false);
-        } catch (\Exception $e) {
-            return back();
-        }
+        $item = $this->getResponse($method, $url);
+
 
         return view('items.edit', compact('item'));
     }
@@ -159,40 +95,12 @@ class ItemController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // 変数を用意
+        
         $url = '/api/items/' . $id;
-        $method = 'PUT';
+        $method = 'PATCH';
 
-        // 送信するデータとヘッダーを用意
-        $item = [
-            'name'          => $request->name,
-            'description'   => $request->description,
-            'price'         => $request->price,
-            'seller'        => $request->seller,
-            'email'         => $request->email,
-            'image_url'     => $request->image_url,
-        ];
-        $options = [
-            'json' => $item,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ];
+        $this->setResponse($request, $url, $method);
 
-        // 接続
-        $client = new Client(['http_errors' => false]);
-        try {
-            // URLにアクセスした結果を変数$responseに代入
-            $response = $client->request($method, self::host . $url, $options);
-            $body = $response->getBody();
-            $json = json_decode($body, false);
-            if (isset($json->errors)) {
-                return back()->withErrors($json->errors);
-            };
-        } catch (\Exception $e) {
-            return back();
-        }
 
         return redirect('/items');
     }
@@ -213,10 +121,60 @@ class ItemController extends Controller
         $client = new Client();
         try {
             $client->request($method, self::host . $url);
-        } catch (\Exception $e) {
+        } catch (\Throwable $th) {
             return back();
         }
 
         return redirect('/items');
+    }
+    protected function getResponse($url, $method)
+    {
+        // Client(接続する為のクラス)を生成
+        $client = new Client();
+        // 接続失敗時はnullを返すようにする
+        try {
+            // URLにアクセスした結果を変数$responseに代入
+            $response = $client->request($method, self::host . $url);
+            // $responseのBodyを取得
+            $data = $response->getBody();
+            $data = json_decode($data, false);
+        } catch (\Exception $e) {
+            $data = null;
+        }
+        return $data;
+    }
+
+    protected function setResponse($request, $url, $method)
+    {
+        // 送信するデータとヘッダーを用意
+        $item = [
+            'name'          => $request->name,
+            'description'   => $request->description,
+            'price'         => $request->price,
+            'seller'        => $request->seller,
+            'email'         => $request->email,
+            'image_url'     => $request->image_url,
+        ];
+        $options = [
+            'json' => $item,
+            'headers' => [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            ],
+        ];
+        // 接続
+        $client = new Client(['http_errors' => false]);
+        try {
+            // URLにアクセスした結果を変数$responseに代入
+            $response = $client->request($method, self::host . $url, $options);
+            $body = $response->getBody();
+            $json = json_decode($body, false);
+            // 'errors'が設定されていたらエラーを設定して前画面へ戻る
+            if(isset($json->errors)) {
+                return back()->withErrors($json->errors);
+            };
+        } catch (\Exception $e) {
+            return back();
+        }
     }
 }
