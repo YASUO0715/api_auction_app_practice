@@ -1,5 +1,6 @@
  <!DOCTYPE html>
  <html lang="ja">
+
  <head>
      <meta charset="UTF-8">
      <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,22 +8,23 @@
      <title>auction create</title>
      <link rel="stylesheet" href="{{ asset('css/style.css') }}">
  </head>
+
  <body>
      @if ($errors->any())
-        <div class="error">
-            <p>
-                <b>{{ count($errors) }}件のエラーがあります。</b>
-            </p>
-            <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+         <div class="error">
+             <p>
+                 <b>{{ count($errors) }}件のエラーがあります。</b>
+             </p>
+             <ul>
+                 @foreach ($errors->all() as $error)
+                     <li>{{ $error }}</li>
+                 @endforeach
+             </ul>
+         </div>
+     @endif
      <h1>商品登録フォーム</h1>
      <form action="/items" method="post">
-        @csrf
+         @csrf
          <p>
              <label for="name">商品名</label>
              <input type="text" name="name" value="{{ old('name') }}">
@@ -47,8 +49,9 @@
              <label for="image_url">商品画像URL</label>
              <input type="text" name="image_url" value="{{ old('image_url') }}">
          </p>
- 
+
          <input type="submit" value="登録">
      </form>
  </body>
+
  </html>
